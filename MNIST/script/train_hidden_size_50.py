@@ -21,7 +21,7 @@ train_label = data['train_label']
 test_image = data['test_image']
 test_label = data['test_label']
 
-batch_size = 128
+batch_size = 512
 train_data = MNIST_Dataset(train_image)
 
 train_data_loader = DataLoader(train_data,
@@ -32,7 +32,7 @@ test_data = MNIST_Dataset(test_image)
 test_data_loader = DataLoader(test_data, batch_size = batch_size)
 
 ## IWAE models
-hidden_size = 10
+hidden_size = 50
 input_size = train_image.shape[-1]
 output_size = train_image.shape[-1]
 
@@ -48,7 +48,7 @@ decoder_optimizer = optim.Adam(decoder.parameters(), lr = 0.001)
 
 ## train the model
 num_samples = 10
-num_epoch = 100
+num_epoch = 1000
 for idx_epoch in range(num_epoch):
     for idx_step, data in enumerate(train_data_loader):
         data = data.cuda()
@@ -109,6 +109,10 @@ for idx_epoch in range(num_epoch):
         encoder_optimizer.step()
 
         print("epoch: {:>3d}, step: {:>5d}, decoder_loss: {:.3f}, encoder_loss: {:.3f}, accept_rate: {:.3f}".format(
-            idx_epoch, idx_step, decoder_loss.item(), encoder_loss.item(), flag_accept.float().mean()))
+            idx_epoch, idx_step, decoder_loss.item(), encoder_loss.item(), flag_accept.float().mean()), flush = True)
 
+    if (idx_epoch + 1) % 10 == 0:
+        torch.save(decoder.state_dict(), "./output/model/decoder_hidden_size_{}_epoch_{}.pt".format(hidden_size, idx_epoch))
+        torch.save(encoder.state_dict(), "./output/model/encoder_hidden_size_{}_epoch_{}.pt".format(hidden_size, idx_epoch))
+        
 sys.exit()
